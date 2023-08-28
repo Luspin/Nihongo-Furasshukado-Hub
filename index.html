@@ -1,0 +1,48 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Flashcard Creator</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Flashcard Creator</h1>
+    <table>
+        <tr>
+            <td><label for="questionField">Question:</label></td>
+            <td><input type="Text" id="questionField" required></td>
+        </tr>
+        <tr>
+            <td><label for="answerField">Answer:</label></td>
+            <td><input type="Text" id="answerField" required></td>
+        </tr>
+    </table>
+
+    <button type="button" id="addFlashcard_Button">Add Flashcard</button>
+    <hr>
+
+    <input type="file" id="filePicker" style="display:none">
+    <!-- TODO: Move this to the CSS file -->
+    <button type="button" id="importDB_Button" onclick="document.getElementById('filePicker').click()">Import DB</button>
+    <!-- TODO: Move this to the JS file -->
+    <button type="button" id="exportDB_Button">Export DB</button>
+    <button type="button" id="clearDB_Button">Clear DB</button>
+    <hr>
+    <h2>Random Flashcard:</h2>
+    <div id="randomFlashcard"></div>
+    <table>
+        <tr>
+            <td><label for="answerField_2">Answer:</label></td>
+            <td><input type="Text" id="answerField_2" required></td>
+        </tr>
+    </table>
+    <p id="answerCheck"></p>
+    <button type="button" id="answer_Button">Check</button>
+    <button type="button" id="nextCard_Button">Next</button>
+
+    <ul id="flashcardList"></ul>
+
+    <script src="script.js"></script>
+</body>
+</html>
