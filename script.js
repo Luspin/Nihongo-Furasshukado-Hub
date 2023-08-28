@@ -29,6 +29,52 @@ function openDB() {
 
     request.onsuccess = event => {
         db = event.target.result;
+
+
+        const transaction = db.transaction('Hiragana', 'readonly');
+        const objectStore = transaction.objectStore('Hiragana');
+    
+        objectStore.getAll().onsuccess = event => {
+            const flashcards = event.target.result;
+            if (flashcards.length === 0) {
+                fetch('https://raw.githubusercontent.com/Luspin/flashokaado/main/hiragana.js')
+                .then(response => response.json())
+                .then(data => {
+                  const transaction = db.transaction('Hiragana', 'readwrite');
+                  const objectStore = transaction.objectStore('Hiragana');
+                  data.forEach(item => objectStore.add(item));
+                  console.log('Database loaded from external URL');
+                  displayRandomFlashcard()
+                })
+                .catch(error => console.error('Error loading database from external URL:', error));
+            } else {
+              console.log('Database already exists in IndexedDB');
+            }
+        };
+
+/*
+                countRequest.onsuccess = function(event) {
+                    const count = event.target.result;
+                    if (count === 0) {
+                      fetch('https://raw.githubusercontent.com/Luspin/flashokaado/main/hiragana.js')
+                        .then(response => response.json())
+                        .then(data => {
+                          const transaction = db.transaction('Hiragana', 'readwrite');
+                          const objectStore = transaction.objectStore('Hiragana');
+                          data.forEach(item => objectStore.add(item));
+                          console.log('Database loaded from external URL');
+                        })
+                        .catch(error => console.error('Error loading database from external URL:', error));
+                    } else {
+                      console.log('Database already exists in IndexedDB');
+                    }
+                };
+            }
+            */
+
+
+
+
         displayRandomFlashcard();
         // fetchFlashcards();
     };
