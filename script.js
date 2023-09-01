@@ -13,6 +13,8 @@ const answerField_2 = document.getElementById('answerField_2');
 const flashcardList = document.getElementById('flashcardList');
 const answerCheck = document.getElementById('answerCheck');
 const activeDeckTitle = document.getElementById('activeDeckTitle');
+const answerValidation = document.getElementById('answerValidation');
+
 
 
 const DB_NAME = 'Flashcards';
@@ -56,29 +58,6 @@ function openDB() {
               activeDeckTitle.textContent = db.objectStoreNames[0];
             }
         };
-
-/*
-                countRequest.onsuccess = function(event) {
-                    const count = event.target.result;
-                    if (count === 0) {
-                      fetch('https://raw.githubusercontent.com/Luspin/flashokaado/main/hiragana.js')
-                        .then(response => response.json())
-                        .then(data => {
-                          const transaction = db.transaction('Hiragana', 'readwrite');
-                          const objectStore = transaction.objectStore('Hiragana');
-                          data.forEach(item => objectStore.add(item));
-                          console.log('Database loaded from external URL');
-                        })
-                        .catch(error => console.error('Error loading database from external URL:', error));
-                    } else {
-                      console.log('Database already exists in IndexedDB');
-                    }
-                };
-            }
-            */
-
-
-
 
         displayRandomFlashcard();
         // fetchFlashcards();
@@ -205,7 +184,7 @@ clearDBButton.addEventListener('click', () => {
 });
 
 nextCardButton.addEventListener('click', () => {
-    answerCheck.innerHTML = "";
+    answerValidation.innerHTML = "";
     answerField_2.value = "";
     displayRandomFlashcard();
 });
@@ -238,7 +217,7 @@ function displayRandomFlashcard() {
             };
 
             randomFlashcardElement.onclick = () => {
-                randomFlashcardElement.textContent = `Romaji: ${randomFlashcard.answer}`;
+                randomFlashcardElement.textContent = `${randomFlashcard.answer}`;
             }
 
         } else {
@@ -248,13 +227,24 @@ function displayRandomFlashcard() {
 };
 
 answer_Button.addEventListener('click', (e) => {
+    checkAnswer();
+});
 
+function checkAnswer() {
     if (answerField_2.value.toLowerCase() == currentAnswer) {
         // console.log("CORRECT");
-        answerCheck.innerHTML = "CORRECT";
+        answerValidation.innerHTML = "CORRECT";
     }
     else {
-        console.log("INCORRECT");
-        answerCheck.innerHTML = `INCORRECT - answer was "${currentAnswer}"`;
+        // console.log("INCORRECT");
+        randomFlashcardElement.textContent =  `${currentAnswer}`;
+        answerValidation.innerHTML = `INCORRECT`;
+    }
+}
+
+answerField_2.addEventListener('keyup', (e) => {
+    if (e.keyCode === 13) {
+        e.preventDefault();
+        answer_Button.click();
     }
 });

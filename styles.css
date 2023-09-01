@@ -106,15 +106,9 @@ h1 {
     margin           : 0 auto;
     text-align: center;  
     width: 300px;  
-    height: 200px;  
+    height: 2em;  
 }
 
-#answerCheck {
-    margin: 0;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    -ms-transform: translate(-50%, -50%);
-    transform: translate(-50%, -50%);
-    justify-content: center;
+#answerValidation {
+    text-align: center;
 }
