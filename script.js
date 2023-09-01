@@ -5,12 +5,15 @@ const importButton = document.getElementById('importDB_Button');
 const exportButton = document.getElementById('exportDB_Button');
 const clearDBButton = document.getElementById('clearDB_Button');
 const backupFileInput = document.getElementById('filePicker');
-const randomFlashcardElement = document.getElementById('randomFlashcard');
+const randomFlashcardElement = document.getElementById('randomFlashcardHeader');
+const randomFlashcardFooter = document.getElementById('randomFlashcardFooter');
 const nextCardButton = document.getElementById('nextCard_Button');
 const answer_Button = document.getElementById('answer_Button');
 const answerField_2 = document.getElementById('answerField_2');
 const flashcardList = document.getElementById('flashcardList');
 const answerCheck = document.getElementById('answerCheck');
+const activeDeckTitle = document.getElementById('activeDeckTitle');
+
 
 const DB_NAME = 'Flashcards';
 const DB_VERSION = 1;
@@ -43,12 +46,14 @@ function openDB() {
                   const transaction = db.transaction('Hiragana', 'readwrite');
                   const objectStore = transaction.objectStore('Hiragana');
                   data.forEach(item => objectStore.add(item));
-                  console.log('Database loaded from external URL');
+                  // console.log('Database loaded from external URL');
+                  activeDeckTitle.textContent = db.objectStoreNames[0];
                   displayRandomFlashcard()
                 })
                 .catch(error => console.error('Error loading database from external URL:', error));
             } else {
-              console.log('Database already exists in IndexedDB');
+              // console.log('Database already exists in IndexedDB');
+              activeDeckTitle.textContent = db.objectStoreNames[0];
             }
         };
 
@@ -200,6 +205,8 @@ clearDBButton.addEventListener('click', () => {
 });
 
 nextCardButton.addEventListener('click', () => {
+    answerCheck.innerHTML = "";
+    answerField_2.value = "";
     displayRandomFlashcard();
 });
 
@@ -224,13 +231,14 @@ function displayRandomFlashcard() {
             
             updateRequest.onsuccess = () => {
                 // Update the UI
-                randomFlashcardElement.textContent = `Hiragana: ${randomFlashcard.question}; Seen Times: ${randomFlashcard.seenTimes}`;
+                randomFlashcardElement.textContent = `${randomFlashcard.question}`;
+                randomFlashcardFooter.textContent = `Seen Times: ${randomFlashcard.seenTimes}; Percentage Correct: xy.z %`;
                 currentAnswer = `${randomFlashcard.answer}`;
-                console.log(currentAnswer);
+                // console.log(currentAnswer);
             };
 
             randomFlashcardElement.onclick = () => {
-                randomFlashcardElement.textContent = `Romaji: ${randomFlashcard.answer}; Seen Times: ${randomFlashcard.seenTimes}`;
+                randomFlashcardElement.textContent = `Romaji: ${randomFlashcard.answer}`;
             }
 
         } else {
@@ -241,8 +249,8 @@ function displayRandomFlashcard() {
 
 answer_Button.addEventListener('click', (e) => {
 
-    if (answerField_2.value == currentAnswer) {
-        console.log("CORRECT");
+    if (answerField_2.value.toLowerCase() == currentAnswer) {
+        // console.log("CORRECT");
         answerCheck.innerHTML = "CORRECT";
     }
     else {

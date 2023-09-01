@@ -59,24 +59,62 @@ h1 {
     padding: 0;
 }
 
+#activeDeckTitle {
+    font-family      : 'Oswald', sans-serif;
+    text-align       : center;
+    font-weight      : bold;
+}
+
+#randomFlashcardTitle {
+    font-family      : 'Oswald', sans-serif;
+    text-align       : center;
+    font-weight      : bold;
+}
+
 .flashcard {
-    background-color: #fff;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    padding: 15px;
-    margin-bottom: 10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color : #FFFFFF;
+    border           : 1px solid #333333;
+    border-radius    : 7px;
+    display          : flex;
+    margin           : 0 auto;
+    width            : 20%;
+    font-size        : xxx-large;
+    font-family      : 'Oswald', sans-serif;
+    font-weight      : bold;
+    color            : #333333;
+    align-items      : center;
+    justify-content  : center;
 }
 
-.flashcard strong {
-    font-weight: bold;
-    color: #333;
+.flashcardHeader {
+    padding          : 1em;
+    height           : 3em;
 }
 
-#randomFlashcard {
-    font: 30px 'Oswald', sans-serif;
-    display: block;
-    text-align: center;
-    width: 20%;
-    margin: 0 auto;
+.flashcardFooter {
+    font             : 10px 'Oswald', sans-serif;
+    padding          : 2em;
+    height           : 1em;
+}
+
+#answerFields {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#answerCheckContainer {
+    margin           : 0 auto;
+    text-align: center;  
+    width: 300px;  
+    height: 200px;  
+}
+
+#answerCheck {
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    justify-content: center;
 }

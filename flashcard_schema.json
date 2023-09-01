@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "Question": {
+      "type": "string"
+    },
+    "Answer": {
+      "type": "string"
+    },
+    "SeenTimes": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "CorrectCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "CorrectPercentage": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "IncorrectCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "LastSeenDate": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": ["Question", "Answer", "SeenTimes", "CorrectCount", "CorrectPercentage", "IncorrectCount", "LastSeenDate"]
+}

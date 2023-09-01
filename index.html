@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Flashcard Creator</h1>
+    <h1>Flashcard Hub</h1>
     <table>
         <tr>
             <td><label for="questionField">Question:</label></td>
@@ -29,17 +29,25 @@
     <button type="button" id="exportDB_Button">Export DB</button>
     <button type="button" id="clearDB_Button">Clear DB</button>
     <hr>
-    <h2>Random Flashcard:</h2>
-    <div id="randomFlashcard"></div>
-    <table>
+
+    <h2 id="activeDeckTitle"></h2>
+    <h3 id="randomFlashcardTitle">Random Flashcard</h3>
+    <div id="randomFlashcardHeader" class="flashcard flashcardHeader"></div>
+    <br>
+    <div id="randomFlashcardFooter" class="flashcard flashcardFooter"></div>
+    <br>
+    <table id="answerFields">
         <tr>
             <td><label for="answerField_2">Answer:</label></td>
             <td><input type="Text" id="answerField_2" required></td>
         </tr>
     </table>
-    <p id="answerCheck"></p>
-    <button type="button" id="answer_Button">Check</button>
-    <button type="button" id="nextCard_Button">Next</button>
+
+    <div id="answerCheckContainer">
+        <p id="answerCheck"></p>
+        <button type="button" id="answer_Button">Check</button>
+        <button type="button" id="nextCard_Button">Next</button>
+    </div>
 
     <ul id="flashcardList"></ul>
 
