@@ -48,7 +48,7 @@ function onDeckSelectionChange() {
     localStorage.setItem('activeDeck', chosenDeck);
 }
 
-async function prepareDatabase() {
+async function prepareDeck() {
     return new Promise((resolve, reject) => {
         // access the browser's IndexedDB storage and find 'DB_NAME' and 'DB_VERSION'
         const primaryDatabaseConnectionRequest = indexedDB.open(DB_NAME, DB_VERSION);
@@ -63,7 +63,7 @@ async function prepareDatabase() {
             objectStore.getAll().onsuccess = event => {
                 if (event.target.result.length === 0) {
                     // fetch the deck from an external URL and save it to the browser's IndexedDB storage
-                    fetch(`Decks/${activeDeck}.js`)
+                    fetch(`https://raw.githubusercontent.com/Luspin/Nihongo-Furasshukado-Hub/main/Decks/${activeDeck}.js`)
                         .then(response => response.json()) // convert the response to a JSON object
                         .then(data => {
                             // create a read-write transaction for the Active Deck store
@@ -125,7 +125,7 @@ async function displayRandomFlashcardFromDeck() {
     answerInput.value = "";
 
     // await the promise regardless of its state ("Pending", "Resolved", or "Rejected")
-    await prepareDatabase();
+    await prepareDeck();
     // create a read-only transaction for the Active Deck store
     const readOnlyTransaction = activeDatabase.transaction(activeDeck, 'readonly');
     const objectStore = readOnlyTransaction.objectStore(activeDeck);
