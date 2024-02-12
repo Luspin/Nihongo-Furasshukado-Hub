@@ -1,79 +1,198 @@
-const activeDeck_Title = document.getElementById('activeDeck_Title');
-const flashcard_Header = document.getElementById('flashcard_Header');
-const flashcard_Footer = document.getElementById('flashcard_Footer');
-const answerInput      = document.getElementById('answerInput');
-const settingsButton   = document.getElementById('settingsButton');
+const flashcardHeader = document.getElementById('flashcardHeader');
+const flashcardFooter = document.getElementById('flashcardFooter');
+const answerInput = document.getElementById('answerInput');
+const expandSettingsButton = document.getElementById('expandSettingsButton');
+const collapseSettingsButton = document.getElementById('collapseSettingsButton');
+const settingsOverlay = document.getElementById('settingsOverlay');
+const deckSelectionDropdown = document.getElementById('deckSelectionDropdown');
 
-settingsButton.addEventListener('click', () => {
-    // UNDEFINED
-});
-
-currentQuestion = '';
-currentAnswer = '';
-
-const ACTIVE_DB = null;
-const DB_NAME = 'Flashcards';
+// Settings
+const DB_NAME = 'Flashcard Decks';
 const DB_VERSION = 1;
+var activeDatabase;
+var activeDeck = localStorage.getItem('activeDeck');
+var currentCard = '';
 
-function openDatabase() {
-    // Open the indexedDB database with the specified DB_NAME and DB_VERSION
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
+initializeUIEventListeners();
+displayRandomFlashcardFromDeck();
 
-    // Handle the "onSuccess" event
-    request.onsuccess = event => {
-        const ACTIVE_DB = event.target.result;
-
-        // Retrieve flashcards from the 'Hiragana' deck
-        const transaction = ACTIVE_DB.transaction('Hiragana', 'readonly');
-        const objectStore = transaction.objectStore('Hiragana');
-
-        // Check if the flashcards exist in the database
-        objectStore.getAll().onsuccess = event => {
-            const flashcards = event.target.result;
-            if (flashcards.length === 0) {
-                // If no flashcards exist, fetch them from an external URL and add them to the database
-                fetch('https://raw.githubusercontent.com/Luspin/flashokaado/main/Decks/Hiragana.js')
-                .then(response => response.json())
-                .then(data => {
-                  const transaction = ACTIVE_DB.transaction('Hiragana', 'readwrite');
-                  const objectStore = transaction.objectStore('Hiragana');
-                  data.forEach(item => objectStore.add(item));
-                  // console.log('Database loaded from external URL');
-                  activeDeckTitle.textContent = ACTIVE_DB.objectStoreNames[0];
-                  displayRandomFlashcard()
-                })
-                .catch(error => console.error('Error loading database from external URL:', error));
-            } else {
-              console.log('Deck already exists locally.');
-              activeDeck_Title.textContent = ACTIVE_DB.objectStoreNames[0];
+function initializeUIEventListeners() {
+    document.addEventListener('DOMContentLoaded', () => {
+        // event listener for the Answer Input field
+        answerInput.addEventListener('keydown', e => {
+            if (e.key === 'Enter') {
+                e.preventDefault(); // prevent any default action triggered by the 'Enter' key
+                checkAndRecordAnswer();
             }
-        };
+        });
+        // event listener for the "Expand Settings" button
+        expandSettingsButton.addEventListener('click', () => { expandSettingsOverlay(); });
+        // event listener for the "Collapse Settings" button
+        collapseSettingsButton.addEventListener('click', () => { collapseSettingsOverlay(); });
+        // event listener for the "Deck Selection" dropdown
+        deckSelectionDropdown.addEventListener('change', onDeckSelectionChange);
+    });
+};
 
-        // Display a random flashcard
-        displayRandomFlashcard();
-        // fetchFlashcards();
-    };
+function expandSettingsOverlay() {
+    settingsOverlay.style.width = "100%";
+};
 
-    // Handle the "onError" event
-    request.onerror = event => {
-        console.error('Error when opening Database.', event.target.error);
-    };
+function collapseSettingsOverlay() {
+    settingsOverlay.style.width = "0%";
+    displayRandomFlashcardFromDeck();
+};
 
-    // Handle the "onUpgradeNeeded" event
-    request.onupgradeneeded = event => {
-        const ACTIVE_DB = event.target.result;
-        // Create an object store called 'Hiragana' with auto-incrementing key
-        const objectStore = ACTIVE_DB.createObjectStore('Hiragana', { keyPath: 'id', autoIncrement: true });
-        // Create indexes for 'question', 'answer', and 'seenTimes' fields
-        objectStore.createIndex('question', 'question', { unique: false });
-        objectStore.createIndex('answer', 'answer', { unique: false });
-        objectStore.createIndex('seenTimes', 'seenTimes', { unique: false });
-    };
+function onDeckSelectionChange() {
+    const chosenDeck = this.value;
+    localStorage.setItem('activeDeck', chosenDeck);
 }
 
-openDatabase();
+async function prepareDatabase() {
+    return new Promise((resolve, reject) => {
+        // access the browser's IndexedDB storage and find 'DB_NAME' and 'DB_VERSION'
+        const primaryDatabaseConnectionRequest = indexedDB.open(DB_NAME, DB_VERSION);
 
-const answer_Button = document.getElementById('answer_Button');
+        primaryDatabaseConnectionRequest.onsuccess = event => {
+            // set the 'activeDatabase' to the result of the Primary Database Connection
+            activeDatabase = event.target.result;
+            // create a read-only transaction for the Active Deck store
+            const readOnlyTransaction = activeDatabase.transaction(activeDeck, 'readonly');
+            const objectStore = readOnlyTransaction.objectStore(activeDeck);
+            // retrieve all items from the Active Deck store
+            objectStore.getAll().onsuccess = event => {
+                if (event.target.result.length === 0) {
+                    // fetch the deck from an external URL and save it to the browser's IndexedDB storage
+                    fetch(`Decks/${activeDeck}.js`)
+                        .then(response => response.json()) // convert the response to a JSON object
+                        .then(data => {
+                            // create a read-write transaction for the Active Deck store
+                            const readWriteTransaction = activeDatabase.transaction(activeDeck, 'readwrite');
+                            const objectStore = readWriteTransaction.objectStore(activeDeck);
+                            // add each item from the external URL to the Active Deck store
+                            data.forEach(item => objectStore.add(item));
+                            // wait for the read-write transaction to complete...
+                            readWriteTransaction.oncomplete = () => {
+                                console.log(`"${activeDeck}" deck retrieved from from an external URL and stored in IndexedDB.`);
+                                document.getElementById('activeDeck_Title').textContent = activeDatabase.objectStoreNames[0];
+                                resolve(activeDatabase);
+                            };
+
+                            readWriteTransaction.onerror = (transactionError) => {
+                                console.error(`Transaction error: ${transactionError}`);
+                            };
+                        })
+                        .catch(error => {
+                            console.error(`Error retrieving deck from external URL: ${error}`);
+                        });
+                } else {
+                    console.log(`Found "${activeDatabase.objectStoreNames[0]}" deck in IndexedDB.`);
+                    document.getElementById('activeDeck_Title').textContent = activeDatabase.objectStoreNames[0];
+                    resolve(activeDatabase);
+                }
+            };
+        };
+
+        primaryDatabaseConnectionRequest.onerror = event => {
+            console.error(`Couldn't connect to ${DB_NAME}: ${event.target.error}`);
+            reject(new Error(`Couldn't connect to the ${DB_NAME} database.`));
+        };
+
+        primaryDatabaseConnectionRequest.onupgradeneeded = event => {
+            activeDatabase = event.target.result;
+
+            if (!activeDatabase.objectStoreNames.contains(activeDeck)) {
+                const objectStore = activeDatabase.createObjectStore(activeDeck, { keyPath: 'id', autoIncrement: true });
+                objectStore.createIndex('question', 'question', { unique: false });
+                objectStore.createIndex('answer', 'answer', { unique: false });
+                objectStore.createIndex('correctGuesses', 'correctGuesses', { unique: false });
+                objectStore.createIndex('incorrectGuesses', 'incorrectGuesses', { unique: false });
+                objectStore.createIndex('ratio', 'ratio', { unique: false });
+            }
+        };
+    });
+};
+
+async function displayRandomFlashcardFromDeck() {
+    activeDeck = localStorage.getItem('activeDeck');
+
+    if (activeDeck === undefined || activeDeck === null) {
+        expandSettingsOverlay();
+        return;
+    }
+
+    // clear the 'answerInput' element
+    answerInput.value = "";
+
+    // await the promise regardless of its state ("Pending", "Resolved", or "Rejected")
+    await prepareDatabase();
+    // create a read-only transaction for the Active Deck store
+    const readOnlyTransaction = activeDatabase.transaction(activeDeck, 'readonly');
+    const objectStore = readOnlyTransaction.objectStore(activeDeck);
+    // retrieve all items from the Active Deck store
+    objectStore.getAll().onsuccess = event => {
+        const retrievedFlashcards = event.target.result;
+
+        if (retrievedFlashcards.length > 0) {
+            // select a random flashcard from the the Active Deck store
+            const randomIndex = Math.floor(Math.random() * retrievedFlashcards.length);
+            currentCard = retrievedFlashcards[randomIndex];
+
+            flashcardHeader.textContent = `${currentCard.question}`;
+            flashcardFooter.textContent = `✔️: ${currentCard.correctGuesses}; ❌: ${currentCard.incorrectGuesses}; ${calculateCorrectGuessRatio()}%`;
+
+        } else {
+            console.error(`Couldn't retrieve any flashcard from "${DB_NAME}/${activeDeck}".`);
+        }
+
+        // calculate the ratio of "correctGuesses" vs "incorrectGuesses"
+        function calculateCorrectGuessRatio() {
+            const guessRatio = (currentCard.incorrectGuesses === 0 && currentCard.correctGuesses > 0) ?
+                100 :
+                (currentCard.correctGuesses / (currentCard.correctGuesses + currentCard.incorrectGuesses)) * 100;
+
+            return (isNaN(guessRatio)) ?
+                0 :
+                guessRatio.toFixed(0);
+        }
+    };
+};
+
+function checkAndRecordAnswer() {
+    // create a read-write transaction for the Active Deck store
+    const readWriteTransaction = activeDatabase.transaction(activeDeck, 'readwrite');
+    const objectStore = readWriteTransaction.objectStore(activeDeck);
+
+    if (answerInput.value.toLowerCase() == currentCard.answer) {
+        currentCard.correctGuesses++;
+        answerValidationMessage.textContent = '✔️';
+    }
+    else {
+        currentCard.incorrectGuesses++;
+        flashcardHeader.textContent = `${currentCard.answer}`;
+        answerValidationMessage.textContent = '❌';
+    }
+
+    // update the card in the Active Deck store
+    const updateRequest = objectStore.put(currentCard);
+
+    updateRequest.onsuccess = () => {
+        // show a new flashcard after 3 seconds
+        setTimeout(() => {
+            answerValidationMessage.textContent = '';
+            displayRandomFlashcardFromDeck();
+        }, 3000);
+    };
+};
+
+
+
+
+
+
+
+/*
+
 const answerField_2 = document.getElementById('answerField_2');
 const flashcardList = document.getElementById('flashcardList');
 const answerCheck = document.getElementById('answerCheck');
@@ -89,6 +208,7 @@ const importButton = document.getElementById('importDB_Button');
 const exportButton = document.getElementById('exportDB_Button');
 const clearDBButton = document.getElementById('clearDB_Button');
 const backupFileInput = document.getElementById('filePicker');
+
 
 
 
@@ -139,18 +259,18 @@ exportButton.addEventListener('click', () => {
     const objectStore = db.transaction('Hiragana').objectStore('Hiragana');
 
     objectStore.getAll().onsuccess = event => {
-      const data = event.target.result;
-      const jsonData = JSON.stringify(data, null, 2);
-  
-      const blob = new Blob([jsonData], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-  
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'flashcards.json';
-      a.textContent = 'Download JSON Backup';
-      a.click();
-      // document.body.appendChild(a);
+        const data = event.target.result;
+        const jsonData = JSON.stringify(data, null, 2);
+
+        const blob = new Blob([jsonData], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'flashcards.json';
+        a.textContent = 'Download JSON Backup';
+        a.click();
+        // document.body.appendChild(a);
     };
 });
 
@@ -164,7 +284,7 @@ function handleFileSelect(event) {
 }
 
 importButton.addEventListener('click', () => {
-    importData() 
+    importData()
 });
 
 function importData(file) {
@@ -207,66 +327,11 @@ clearDBButton.addEventListener('click', () => {
     };
 });
 
-nextCardButton.addEventListener('click', () => {
-    answerValidation.innerHTML = "";
-    answerField_2.value = "";
-    displayRandomFlashcard();
-});
 
-function displayRandomFlashcard() {
-    const transaction = db.transaction('Hiragana', 'readwrite');
-    const objectStore = transaction.objectStore('Hiragana');
 
-    objectStore.getAll().onsuccess = event => {
-        const flashcards = event.target.result;
-        if (flashcards.length > 0) {
-            const randomIndex = Math.floor(Math.random() * flashcards.length);
-            const randomFlashcard = flashcards[randomIndex];
 
-            // Increment the seenTimes counter
-            randomFlashcard.seenTimes = (randomFlashcard.seenTimes || 0) + 1;
 
-            // Use the put method in the transaction's onsuccess event
-            const updateRequest = objectStore.put(randomFlashcard);
-            
-            updateRequest.onsuccess = () => {
-                // Update the UI
-                flashcard_Header.textContent = `${randomFlashcard.question}`;
-                flashcard_Footer.textContent = `Seen Times: ${randomFlashcard.seenTimes}; Percentage Correct: xy.z %`;
-                currentAnswer = `${randomFlashcard.answer}`;
-                // console.log(currentAnswer);
-            };
 
-            flashcard_Header.onclick = () => {
-                flashcard_Header.textContent = `${randomFlashcard.answer}`;
-            }
 
-        } else {
-            flashcard_Header.textContent = 'No flashcards available.';
-        }
-    };
-};
 
-answer_Button.addEventListener('click', (e) => {
-    checkAnswer();
-});
-
-function checkAnswer() {
-    if (answerField_2.value.toLowerCase() == currentAnswer) {
-        // console.log("CORRECT");
-        answerValidation.innerHTML = "CORRECT";
-    }
-    else {
-        // console.log("INCORRECT");
-        flashcard_Header.textContent =  `${currentAnswer}`;
-        answerValidation.innerHTML = `INCORRECT`;
-    }
-}
-
-answerField_2.addEventListener('keyup', (e) => {
-    if (e.keyCode === 13) {
-        e.preventDefault();
-        answer_Button.click();
-    }
-});
-
+*/
