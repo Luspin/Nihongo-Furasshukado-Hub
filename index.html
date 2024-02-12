@@ -1,55 +1,68 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html>
+
 <head>
-    <title>Flashcard Creator</title>
+    <title>Flashcard Hub</title>
     <meta charset="utf-8">
-    <link rel="stylesheet" href="styles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="styles.css" />
+    <!-- Fluent UI Icons -->
+    <!-- https://developer.microsoft.com/en-us/fluentui?fabricVer=7#/styles/web/icons#available-icons -->
+    <link rel="stylesheet"
+        href="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-core/11.0.0/css/fabric.min.css" />
 </head>
+
 <body>
-    <h1>Flashcard Hub</h1>
-    <table>
-        <tr>
-            <td><label for="questionField">Question:</label></td>
-            <td><input type="Text" id="questionField" required></td>
-        </tr>
-        <tr>
-            <td><label for="answerField">Answer:</label></td>
-            <td><input type="Text" id="answerField" required></td>
-        </tr>
-    </table>
+    <main>
+        <h1 id="pageTitle">Flashcard Hub</h1>
+        <h2 id="activeDeck_Title"></h2>
+        <div id="randomFlashcard" class="">
+            <p id="flashcard_Header" class=""></p>
+            <p id="flashcard_Footer" class=""></p>
+        </div>
+        <br>
+        <table id="answerTable">
+            <tr>
+                <td><label for="answerInput">Answer:</label></td>
+                <td><input type="Text" id="answerInput" autofocus required placeholder="Type rōmaji here"></td>
+            </tr>
+            <tr>
+                <td id="answerValidationMessage"></td>
+            </tr>
+        </table>
 
-    <button type="button" id="addFlashcard_Button">Add Flashcard</button>
-    <hr>
+        <i id="settingsButton" class="ms-Icon ms-Icon--Settings" aria-hidden="true"></i>
 
-    <input type="file" id="filePicker" style="display:none">
-    <!-- TODO: Move this to the CSS file -->
-    <button type="button" id="importDB_Button" onclick="document.getElementById('filePicker').click()">Import DB</button>
-    <!-- TODO: Move this to the JS file -->
-    <button type="button" id="exportDB_Button">Export DB</button>
-    <button type="button" id="clearDB_Button">Clear DB</button>
-    <hr>
-
-    <h2 id="activeDeckTitle"></h2>
-    <h3 id="randomFlashcardTitle">Random Flashcard</h3>
-    <div id="randomFlashcardHeader" class="flashcard flashcardHeader"></div>
-    <br>
-    <div id="randomFlashcardFooter" class="flashcard flashcardFooter"></div>
-    <br>
-    <table id="answerFields">
-        <tr>
-            <td><label for="answerField_2">Answer:</label></td>
-            <td><input type="Text" id="answerField_2" required></td>
-        </tr>
-    </table>
-
-    <div id="answerCheckContainer">
-        <button type="button" id="answer_Button">Check</button>
-        <button type="button" id="nextCard_Button">Next</button>
-    </div>
-<p id="answerValidation">113</p>
-
-    <ul id="flashcardList"></ul>
-    <script src="script.js"></script>
+        <script src="main.js"></script>
+    </main>
 </body>
+
 </html>
+
+<!--
+    <ul id="flashcardList"></ul>
+         
+
+        <table hidden="true">
+            <tr>
+                <td><label for="questionField">Question:</label></td>
+                <td><input type="Text" id="questionField" required></td>
+            </tr>
+            <tr>
+                <td><label for="answerField">Answer:</label></td>
+                <td><input type="Text" id="answerField" required></td>
+            </tr>
+        </table>
+    
+        <button hidden="true" type="button" id="addFlashcard_Button">Add Flashcard</button>
+        <hr>
+    
+        <input type="file" id="filePicker" style="display:none">
+        TODO: Move this to the CSS file
+        <button hidden="true" type="button" id="importDB_Button" onclick="document.getElementById('filePicker').click()">Import DB</button>
+         TODO: Move this to the JS file
+        <button hidden="true" type="button" id="exportDB_Button">Export DB</button>
+        <button hidden="true" type="button" id="clearDB_Button">Clear DB</button>
+        <hr>
+         CHECK https://supabase.com/ or https://firebase.google.com/ 
+    -->

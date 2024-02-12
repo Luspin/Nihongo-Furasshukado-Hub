@@ -1,13 +1,78 @@
-// script.js
-const flashcardForm = document.getElementById('flashcardInsertionForm');
-const addFlashcardButton = document.getElementById('addFlashcard_Button');
-const importButton = document.getElementById('importDB_Button');
-const exportButton = document.getElementById('exportDB_Button');
-const clearDBButton = document.getElementById('clearDB_Button');
-const backupFileInput = document.getElementById('filePicker');
-const randomFlashcardElement = document.getElementById('randomFlashcardHeader');
-const randomFlashcardFooter = document.getElementById('randomFlashcardFooter');
-const nextCardButton = document.getElementById('nextCard_Button');
+const activeDeck_Title = document.getElementById('activeDeck_Title');
+const flashcard_Header = document.getElementById('flashcard_Header');
+const flashcard_Footer = document.getElementById('flashcard_Footer');
+const answerInput      = document.getElementById('answerInput');
+const settingsButton   = document.getElementById('settingsButton');
+
+settingsButton.addEventListener('click', () => {
+    // UNDEFINED
+});
+
+currentQuestion = '';
+currentAnswer = '';
+
+const ACTIVE_DB = null;
+const DB_NAME = 'Flashcards';
+const DB_VERSION = 1;
+
+function openDatabase() {
+    // Open the indexedDB database with the specified DB_NAME and DB_VERSION
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+    // Handle the "onSuccess" event
+    request.onsuccess = event => {
+        const ACTIVE_DB = event.target.result;
+
+        // Retrieve flashcards from the 'Hiragana' deck
+        const transaction = ACTIVE_DB.transaction('Hiragana', 'readonly');
+        const objectStore = transaction.objectStore('Hiragana');
+
+        // Check if the flashcards exist in the database
+        objectStore.getAll().onsuccess = event => {
+            const flashcards = event.target.result;
+            if (flashcards.length === 0) {
+                // If no flashcards exist, fetch them from an external URL and add them to the database
+                fetch('https://raw.githubusercontent.com/Luspin/flashokaado/main/Decks/Hiragana.js')
+                .then(response => response.json())
+                .then(data => {
+                  const transaction = ACTIVE_DB.transaction('Hiragana', 'readwrite');
+                  const objectStore = transaction.objectStore('Hiragana');
+                  data.forEach(item => objectStore.add(item));
+                  // console.log('Database loaded from external URL');
+                  activeDeckTitle.textContent = ACTIVE_DB.objectStoreNames[0];
+                  displayRandomFlashcard()
+                })
+                .catch(error => console.error('Error loading database from external URL:', error));
+            } else {
+              console.log('Deck already exists locally.');
+              activeDeck_Title.textContent = ACTIVE_DB.objectStoreNames[0];
+            }
+        };
+
+        // Display a random flashcard
+        displayRandomFlashcard();
+        // fetchFlashcards();
+    };
+
+    // Handle the "onError" event
+    request.onerror = event => {
+        console.error('Error when opening Database.', event.target.error);
+    };
+
+    // Handle the "onUpgradeNeeded" event
+    request.onupgradeneeded = event => {
+        const ACTIVE_DB = event.target.result;
+        // Create an object store called 'Hiragana' with auto-incrementing key
+        const objectStore = ACTIVE_DB.createObjectStore('Hiragana', { keyPath: 'id', autoIncrement: true });
+        // Create indexes for 'question', 'answer', and 'seenTimes' fields
+        objectStore.createIndex('question', 'question', { unique: false });
+        objectStore.createIndex('answer', 'answer', { unique: false });
+        objectStore.createIndex('seenTimes', 'seenTimes', { unique: false });
+    };
+}
+
+openDatabase();
+
 const answer_Button = document.getElementById('answer_Button');
 const answerField_2 = document.getElementById('answerField_2');
 const flashcardList = document.getElementById('flashcardList');
@@ -17,58 +82,17 @@ const answerValidation = document.getElementById('answerValidation');
 
 
 
-const DB_NAME = 'Flashcards';
-const DB_VERSION = 1;
-let db;
-
-function openDB() {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-
-    request.onupgradeneeded = event => {
-        const db = event.target.result;
-        const objectStore = db.createObjectStore('Hiragana', { keyPath: 'id', autoIncrement: true });
-        objectStore.createIndex('question', 'question', { unique: false });
-        objectStore.createIndex('answer', 'answer', { unique: false });
-        objectStore.createIndex('seenTimes', 'seenTimes', { unique: false });
-    };
-
-    request.onsuccess = event => {
-        db = event.target.result;
+const nextCardButton = document.getElementById('nextCard_Button');
+const flashcardForm = document.getElementById('flashcardInsertionForm');
+const addFlashcardButton = document.getElementById('addFlashcard_Button');
+const importButton = document.getElementById('importDB_Button');
+const exportButton = document.getElementById('exportDB_Button');
+const clearDBButton = document.getElementById('clearDB_Button');
+const backupFileInput = document.getElementById('filePicker');
 
 
-        const transaction = db.transaction('Hiragana', 'readonly');
-        const objectStore = transaction.objectStore('Hiragana');
-    
-        objectStore.getAll().onsuccess = event => {
-            const flashcards = event.target.result;
-            if (flashcards.length === 0) {
-                fetch('https://raw.githubusercontent.com/Luspin/flashokaado/main/hiragana.js')
-                .then(response => response.json())
-                .then(data => {
-                  const transaction = db.transaction('Hiragana', 'readwrite');
-                  const objectStore = transaction.objectStore('Hiragana');
-                  data.forEach(item => objectStore.add(item));
-                  // console.log('Database loaded from external URL');
-                  activeDeckTitle.textContent = db.objectStoreNames[0];
-                  displayRandomFlashcard()
-                })
-                .catch(error => console.error('Error loading database from external URL:', error));
-            } else {
-              // console.log('Database already exists in IndexedDB');
-              activeDeckTitle.textContent = db.objectStoreNames[0];
-            }
-        };
 
-        displayRandomFlashcard();
-        // fetchFlashcards();
-    };
 
-    request.onerror = event => {
-        console.error('Error opening Database.', event.target.error);
-    };
-}
-
-openDB();
 
 function fetchFlashcards() {
     flashcardList.innerHTML = '';
@@ -189,9 +213,6 @@ nextCardButton.addEventListener('click', () => {
     displayRandomFlashcard();
 });
 
-currentQuestion = '';
-currentAnswer = '';
-
 function displayRandomFlashcard() {
     const transaction = db.transaction('Hiragana', 'readwrite');
     const objectStore = transaction.objectStore('Hiragana');
@@ -210,18 +231,18 @@ function displayRandomFlashcard() {
             
             updateRequest.onsuccess = () => {
                 // Update the UI
-                randomFlashcardElement.textContent = `${randomFlashcard.question}`;
-                randomFlashcardFooter.textContent = `Seen Times: ${randomFlashcard.seenTimes}; Percentage Correct: xy.z %`;
+                flashcard_Header.textContent = `${randomFlashcard.question}`;
+                flashcard_Footer.textContent = `Seen Times: ${randomFlashcard.seenTimes}; Percentage Correct: xy.z %`;
                 currentAnswer = `${randomFlashcard.answer}`;
                 // console.log(currentAnswer);
             };
 
-            randomFlashcardElement.onclick = () => {
-                randomFlashcardElement.textContent = `${randomFlashcard.answer}`;
+            flashcard_Header.onclick = () => {
+                flashcard_Header.textContent = `${randomFlashcard.answer}`;
             }
 
         } else {
-            randomFlashcardElement.textContent = 'No flashcards available.';
+            flashcard_Header.textContent = 'No flashcards available.';
         }
     };
 };
@@ -237,7 +258,7 @@ function checkAnswer() {
     }
     else {
         // console.log("INCORRECT");
-        randomFlashcardElement.textContent =  `${currentAnswer}`;
+        flashcard_Header.textContent =  `${currentAnswer}`;
         answerValidation.innerHTML = `INCORRECT`;
     }
 }
@@ -248,3 +269,4 @@ answerField_2.addEventListener('keyup', (e) => {
         answer_Button.click();
     }
 });
+
