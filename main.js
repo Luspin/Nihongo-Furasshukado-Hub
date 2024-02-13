@@ -2,6 +2,7 @@
 const flashcardHeader = document.getElementById('flashcardHeader');
 const flashcardFace = document.getElementById('flashcardFace');
 const flashcardFooter = document.getElementById('flashcardFooter');
+const progressBar = document.getElementById('postSubmissionProgressBar');
 const answerForm = document.getElementById('answerForm');
 const userInput = document.getElementById('userInput');
 const submitAnswerButton = document.getElementById('submitAnswerButton');
@@ -112,7 +113,7 @@ async function prepareDeck() {
                             const objectStore = readWriteTransaction.objectStore(activeDeck);
                             // add each item from the external URL to the Active Deck store
                             data.forEach(item => objectStore.add(item));
-                            // wait for the read-write transaction to complete...
+                            // wait for the read-write transaction to complete…
                             readWriteTransaction.oncomplete = () => {
                                 console.log(`"${activeDeck}" deck retrieved from from an external URL and stored in IndexedDB.`);
                                 flashcardHeader.textContent = activeDatabase.objectStoreNames[0];
@@ -145,7 +146,7 @@ async function prepareDeck() {
                             const objectStore = readWriteTransaction.objectStore(activeDeck);
                             // add each item from the external URL to the Active Deck store
                             data.forEach(item => objectStore.add(item));
-                            // wait for the read-write transaction to complete...
+                            // wait for the read-write transaction to complete…
                             readWriteTransaction.oncomplete = () => {
                                 console.log(`"${activeDeck}" deck retrieved from from an external URL and stored in IndexedDB.`);
                                 document.getElementById('activeDeck_Title').textContent = activeDatabase.objectStoreNames[0];
@@ -257,25 +258,36 @@ function checkAndRecordAnswer() {
 
     if (userInput.value.toLowerCase() == currentCard.answer) {
         currentCard.correctGuesses++;
-        answerFeedback.textContent = '✔️';
     }
     else {
-        currentCard.incorrectGuesses++;
         flashcardFace.textContent = `${currentCard.answer}`;
-        answerFeedback.textContent = '❌';
+        currentCard.incorrectGuesses++;
     }
 
-    // update the card in the Active Deck store
+    // update the card statistics in the Active Deck store
     const updateRequest = objectStore.put(currentCard);
 
     updateRequest.onsuccess = () => {
-        // show a new flashcard after 3 seconds
-        setTimeout(() => {
-            answerFeedback.textContent = '';
-            displayRandomFlashcardFromDeck();
-        }, 3000);
+        console.log(`Card statistics updated in "${DB_NAME}/${activeDeck}"`);
     };
+
+    // display a new flashcard after 2 seconds
+    animateProgressBar(displayRandomFlashcardFromDeck);
 };
+
+function animateProgressBar(callback) {
+    let i = 0;
+    // update the progress bar value every 100 milliseconds
+    const interval = setInterval(() => {
+        progressBar.setAttribute('value', i);
+        i += 20; // increment the current value by 20%
+
+        if (i > 100) {
+            clearInterval(interval); // stop the interval when surpassing 100%
+            callback(); // …and trigger the callback()
+        }
+    }, 250);
+}
 
 
 // to list all Decks in GitHub

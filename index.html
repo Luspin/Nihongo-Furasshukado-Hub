@@ -31,9 +31,10 @@
             <div id="flashcardFooter"></div>
         </fluent-card>
         <br>
+        <fluent-progress id="postSubmissionProgressBar" value="0"></fluent-progress>
+        <br>
         <!-- Answer Form -->
         <form id="answerForm"><!-- necessary for Android input interception -->
-            <p id="answerFeedback"></p>
             <fluent-text-field appearance="outline" id="userInput" autofocus required
                 placeholder="Type rōmaji here">
             </fluent-text-field>
@@ -51,11 +52,19 @@
             </header>
             <!-- Settings -->
             <div id="settingsOverlay-Settings">
-                <p>Deck: </p>
-                <fluent-combobox id="deckSelectionCombobox" placeholder="Select a Deck">
-                    <fluent-option value="1">Hiragana</fluent-option>
-                    <fluent-option value="2">Katakana</fluent-option>
-                </fluent-combobox>
+                <table>
+                    <tr>
+                        <td>
+                            <p style="padding-right: 5px;">Deck</p>
+                        </td>
+                        <td>
+                            <fluent-combobox id="deckSelectionCombobox" placeholder="Select a Deck">
+                                <fluent-option value="1">Hiragana</fluent-option>
+                                <fluent-option value="2">Katakana</fluent-option>
+                            </fluent-combobox>
+                        </td>
+                    </tr>
+                </table>
             </div>
         </fluent-card>
         <!-- JavaScript -->
