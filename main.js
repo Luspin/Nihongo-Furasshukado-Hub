@@ -1,6 +1,8 @@
 const flashcardHeader = document.getElementById('flashcardHeader');
 const flashcardFooter = document.getElementById('flashcardFooter');
+const answerForm = document.getElementById('answerForm');
 const answerInput = document.getElementById('answerInput');
+const checkAnswerButton = document.getElementById('checkAnswerButton');
 const expandSettingsButton = document.getElementById('expandSettingsButton');
 const collapseSettingsButton = document.getElementById('collapseSettingsButton');
 const settingsOverlay = document.getElementById('settingsOverlay');
@@ -20,13 +22,17 @@ function initializeUIEventListeners() {
     document.addEventListener('DOMContentLoaded', () => {
         // event listener for the Answer Input field
         answerInput.addEventListener('keydown', e => {
-
-            alert(`Key pressed: ${e.key}`);
-
             if (e.key === 'Enter') {
                 e.preventDefault(); // prevent any default action triggered by the 'Enter' key
                 checkAndRecordAnswer();
             }
+        });
+        // event listener for the "Answer Form" submission
+        answerForm.addEventListener('submit', (e) => {
+            e.preventDefault(); // Prevent the default form submission via HTTP request
+            
+            // Your logic to handle the answer
+            checkAndRecordAnswer();
         });
         // event listener for the "Expand Settings" button
         expandSettingsButton.addEventListener('click', () => { expandSettingsOverlay(); });
@@ -36,10 +42,6 @@ function initializeUIEventListeners() {
         deckSelectionDropdown.addEventListener('change', onDeckSelectionChange);
     });
 };
-
-$("#answerInput").submit(function(){
-    alert("Submitted");
-});
 
 function expandSettingsOverlay() {
     settingsOverlay.style.width = "100%";

@@ -22,16 +22,19 @@
             <p id="flashcardFooter" class=""></p>
         </div>
         <br>
-        <table id="answerTable">
-            <tr>
-                <td id="answerValidationMessage"></td>
-            </tr>
-            <tr>
-                <td><label for="answerInput">Answer:</label></td>
-                <td><input type="Text" id="answerInput" autofocus required placeholder="Type rōmaji here"></td>
-            </tr>
-        </table>
-
+        <form id="answerForm"> <!-- necessary for Android input interception -->
+            <table id="answerTable">
+                <tr>
+                    <td id="answerValidationMessage"></td>
+                </tr>
+                <tr>
+                    <td><label for="answerInput">Answer:</label></td>
+                    <td><input type="Text" id="answerInput" autofocus required placeholder="Type rōmaji here"></td>
+                </tr>
+            </table>
+            <!-- can be hidden through CSS later -->
+            <button type="submit" id="checkAnswerButton">Check Answer</button>
+        </form>
         <i class="ms-Icon ms-Icon--Settings" id="expandSettingsButton" aria-hidden="true"></i>
 
         <div id="settingsOverlay" class="settingsOverlay">
