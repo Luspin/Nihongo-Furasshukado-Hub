@@ -20,7 +20,9 @@ function initializeUIEventListeners() {
     document.addEventListener('DOMContentLoaded', () => {
         // event listener for the Answer Input field
         answerInput.addEventListener('keydown', e => {
-            alert(e.key);
+
+            alert(`Key pressed: ${e.key}`);
+
             if (e.key === 'Enter') {
                 e.preventDefault(); // prevent any default action triggered by the 'Enter' key
                 checkAndRecordAnswer();
@@ -34,6 +36,10 @@ function initializeUIEventListeners() {
         deckSelectionDropdown.addEventListener('change', onDeckSelectionChange);
     });
 };
+
+$("#answerInput").submit(function(){
+    alert("Submitted");
+});
 
 function expandSettingsOverlay() {
     settingsOverlay.style.width = "100%";
