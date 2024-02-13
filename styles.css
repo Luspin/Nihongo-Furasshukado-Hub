@@ -1,153 +1,134 @@
-/* styles.css */
 body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f4f4f4;
+    display             : flex;
+    flex-direction      : column;      /* stack children Vertically */
+    min-height          : 100vh;       /* 100% of Viewport */
+    align-items         : center;      /* center Horizontally*/
+    justify-content     : center;      /* center Vertically */
+    margin              : 0;
+    padding             : 10px;
+    box-sizing          : border-box;
 }
 
-.container {
-    max-width: 800px;
-    margin: auto;
-    padding: 20px;
+/* Top Buttons */
+#expandSettingsButton {
+    position            : absolute;
+    top                 : 10px;
+    left                : 10px;
+    padding             : 10px;
+    border-radius       : 20%;
+    transition          : background-color 0.3s, color 0.3s; /* smooth transition for :Hover */
 }
 
-h1 {
-    text-align: center;
-    color: #333;
+#expandSettingsButton:hover {
+    cursor              : pointer;
+    background-color    : #005a9e;
+    color               : white;
 }
 
-.form-group {
-    margin-bottom: 20px;
+#toggleBrightnessButton {
+    position            : absolute;
+    top                 : 10px;
+    left                : 50px;
+    padding             : 10px;
+    border-radius       : 20%;
+    transition          : background-color 0.3s, color 0.3s; /* smooth transition for :Hover */
 }
 
-.form-group label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-    color: #555;
+#toggleBrightnessButton:hover {
+    cursor              : pointer;
+    background-color    : #ffb900;
+    color               : white;
 }
 
-.form-group input[type="text"] {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
+/* Flashcard */
+#flashcardContainer {
+    cursor              : default;
+    user-select         : none;     /* prevent Text selection */
+    width               : 90vw;     /* 90% of Viewport */
+    max-width           : 200px;
+    text-align          : center;
 }
 
-.button-container {
-    text-align: center;
+#flashcardFooter {
+    margin              : 5px;
 }
 
-.button-container button {
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    padding: 10px 20px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s ease;
+.footerIcon {
+    margin-left         : 5px;
+    margin-right        : 5px;
+    vertical-align      : text-bottom;
 }
 
-.button-container button:hover {
-    background-color: #0056b3;
+/* Answer Form */
+#answerForm {
+    display             : flex;
+    flex-direction      : column;
+    justify-content     : center;   /* center children Horizontally */
+    align-items         : center;   /* center children Vertically */
 }
 
-.flashcardList {
-    list-style: none;
-    padding: 0;
+/* Settings Overlay */
+#settingsOverlay {
+    position            : absolute;
+    height              : 50%;
+    width               : auto;
+    padding-left        : 50px;
+    padding-right       : 50px;
+    z-index             : 1;
+    left                : 50%;
+    top                 : 50%;
+    transform           : translate(-50%, -50%);
+    overflow-x          : hidden;
+    display             : flex;
+    flex-direction      : column;
+    justify-content     : flex-start;
+    align-items         : center;
+    transition          : opacity 0.5s ease;
+    opacity             : 0;
+    visibility          : hidden;
 }
 
-#activeDeckTitle {
-    font-family      : 'Oswald', sans-serif;
-    text-align       : center;
-    font-weight      : bold;
+#settingsOverlay.visible {
+    opacity             : 1;
+    visibility          : visible;
 }
 
-#randomFlashcardTitle {
-    font-family      : 'Oswald', sans-serif;
-    text-align       : center;
-    font-weight      : bold;
+/* Settings Overlay - Header */
+#settingsOverlay-Header {
+    position            : relative; /* relative to #settingsOverlay */
+    width               : 100%;     /* relative to #settingsOverlay */
+    padding-left        : 50px;
+    padding-right       : 50px;
+    display             : flex;
+    justify-content     : center;   /* center children Horizontally */
+    align-items         : center;   /* center children Vertically */
 }
 
-/* The Overlay (background) */
-.settingsOverlay {
-    /* Height & width depends on how you want to reveal the overlay (see JS below) */   
-    height: 100%;
-    width: 0;
-    position: fixed; /* Stay in place */
-    z-index: 1; /* Sit on top */
-    left: 0;
-    top: 0;
-    background-color: rgb(200,200,200); /* Black fallback color */
-    background-color: rgba(200,200,200, 0.9); /* Black w/opacity */
-    overflow-x: hidden; /* Disable horizontal scroll */
-    transition: 0.5s; /* 0.5 second transition effect to slide in or slide down the overlay (height or width, depending on reveal) */
-  }
-
-  /* Position the content inside the overlay */
-.settingsOverlay-content {
-    position: relative;
-    top: 25%; /* 25% from the top */
-    width: 100%; /* 100% width */
-    text-align: center; /* Centered text/links */
-    margin-top: 30px; /* 30px top margin to avoid conflict with the close button on smaller screens */
-  }
-  
-  /* The navigation links inside the overlay */
-  .settingsOverlay a {
-    padding: 8px;
-    text-decoration: none;
-    font-size: 36px;
-    color: #818181;
-    display: block; /* Display block instead of inline */
-    transition: 0.3s; /* Transition effects on hover (color) */
-  }
-  
-  /* When you mouse over the navigation links, change their color */
-  .settingsOverlay a:hover, .settingsOverlay a:focus {
-    color: #f1f1f1;
-  }
-
-.flashcard {
-    background-color : #FFFFFF;
-    border           : 1px solid #333333;
-    border-radius    : 7px;
-    display          : flex;
-    margin           : 0 auto;
-    width            : 20%;
-    font-size        : xxx-large;
-    font-family      : 'Oswald', sans-serif;
-    font-weight      : bold;
-    color            : #333333;
-    align-items      : center;
-    justify-content  : center;
+/* Settings Overlay - Top Buttons */
+/* Close Button */
+#collapseSettingsButton {
+    position            : absolute;
+    right               : 10px;
+    padding             : 10px;
+    border-radius       : 20%;
+    transition          : background-color 0.3s, color 0.3s; /* smooth transition for :Hover */
 }
 
-.flashcardHeader {
-    padding          : 1em;
-    height           : 3em;
+#collapseSettingsButton:hover {
+    cursor              : pointer;
+    background-color    : #d13438;
+    color               : #ffffff;
 }
 
-.flashcardFooter {
-    font             : 10px 'Oswald', sans-serif;
-    padding          : 2em;
-    height           : 1em;
+/* Settings Overlay - Settings */
+#settingsOverlay-Settings {
+    display             : flex;
+    flex-grow           : 1;
+    justify-content     : center;   /* center children Horizontally */
+    align-items         : center;   /* center children Vertically */
+    width               : 100%;     /* Match the width of the overlay */
 }
 
-#answerFields {
-    margin-left: auto;
-    margin-right: auto;
-}
-
-#answerCheckContainer {
-    margin           : 0 auto;
-    text-align: center;  
-    width: 300px;  
-    height: 2em;  
-}
-
-#answerValidation {
-    text-align: center;
+#deckSelectionCombobox {
+    display             : flex;
 }

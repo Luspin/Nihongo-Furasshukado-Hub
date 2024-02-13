@@ -6,48 +6,59 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="styles.css" />
-    <!-- Fluent UI Icons -->
-    <!-- https://developer.microsoft.com/en-us/fluentui?fabricVer=7#/styles/web/icons#available-icons -->
+    <!-- Fluent UI -->
+    <!-- https://developer.microsoft.com/en-us/fluentui?fabricVer=7#/get-started/web -->
     <link rel="stylesheet"
         href="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-core/11.0.0/css/fabric.min.css" />
+    <!-- Fluent UI Web Components Overview -->
+    <!-- https://learn.microsoft.com/en-us/fluent-ui/web-components/ -->
+    <!-- https://www.npmjs.com/package/@fluentui/web-components -->
+    <script type="module" src="https://unpkg.com/@fluentui/web-components"></script>
 </head>
 
-<body>
+<body class="ms-bgColor-gray10">
     <main>
-        <h1 id="pageTitle">Flashcard Hub</h1>
-
-        <h2 id="activeDeck_Title"></h2>
-        <div id="randomFlashcard" class="">
-            <p id="flashcardHeader" class=""></p>
-            <p id="flashcardFooter" class=""></p>
-        </div>
+        <!-- Header -->
+        <header>
+            <i class="ms-Icon ms-Icon--Settings" id="expandSettingsButton" aria-hidden="true"></i>
+            <i class="ms-Icon ms-Icon--Light" id="toggleBrightnessButton" aria-hidden="true"></i>
+        </header>
+        <!-- Flashcard -->
+        <fluent-card id="flashcardContainer" class="ms-fontSize-12 ms-fontWeight-regular">
+            <p id="flashcardHeader" class="ms-fontWeight-semibold"></p>
+            <p id="flashcardFace" class="ms-fontSize-42" lang="ja-JP"></p>
+            <fluent-divider></fluent-divider>
+            <div id="flashcardFooter"></div>
+        </fluent-card>
         <br>
-        <form id="answerForm"> <!-- necessary for Android input interception -->
-            <table id="answerTable">
-                <tr>
-                    <td id="answerValidationMessage"></td>
-                </tr>
-                <tr>
-                    <td><label for="answerInput">Answer:</label></td>
-                    <td><input type="Text" id="answerInput" autofocus required placeholder="Type rōmaji here"></td>
-                </tr>
-            </table>
-            <!-- can be hidden through CSS later -->
-            <button type="submit" id="checkAnswerButton">Check Answer</button>
+        <!-- Answer Form -->
+        <form id="answerForm"><!-- necessary for Android input interception -->
+            <p id="answerFeedback"></p>
+            <fluent-text-field appearance="outline" id="userInput" autofocus required
+                placeholder="Type rōmaji here">
+            </fluent-text-field>
+            <br>
+            <fluent-button appearance="accent" type="submit" id="submitAnswerButton">
+                Submit
+            </fluent-button>
         </form>
-        <i class="ms-Icon ms-Icon--Settings" id="expandSettingsButton" aria-hidden="true"></i>
-
-        <div id="settingsOverlay" class="settingsOverlay">
-            <i class="ms-Icon ms-Icon--ChromeClose" id="collapseSettingsButton" aria-hidden="true"></i>
-            <!-- Overlay content -->
-            <label for="deckSelectionDropdown">Choose Deck:</label>
-            <select id="deckSelectionDropdown" name="selectedDeck">
-                <option value=""></option>
-                <option value="Hiragana">Hiragana</option>
-                <option value="Katakana">Katakana</option>
-            </select>
-        </div>
-
+        <!-- Settings Overlay -->
+        <fluent-card id="settingsOverlay" class="ms-fontSize-14 settingsOverlay">
+            <!-- Header -->
+            <header id="settingsOverlay-Header">
+                <h2 class="ms-fontSize-1">Settings</h2>
+                <i class="ms-Icon ms-Icon--ChromeClose" id="collapseSettingsButton" aria-hidden="true"></i>
+            </header>
+            <!-- Settings -->
+            <div id="settingsOverlay-Settings">
+                <p>Deck: </p>
+                <fluent-combobox id="deckSelectionCombobox" placeholder="Select a Deck">
+                    <fluent-option value="1">Hiragana</fluent-option>
+                    <fluent-option value="2">Katakana</fluent-option>
+                </fluent-combobox>
+            </div>
+        </fluent-card>
+        <!-- JavaScript -->
         <script src="main.js"></script>
     </main>
 </body>

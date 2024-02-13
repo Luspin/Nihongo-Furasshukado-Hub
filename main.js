@@ -1,12 +1,14 @@
+// Constants
 const flashcardHeader = document.getElementById('flashcardHeader');
+const flashcardFace = document.getElementById('flashcardFace');
 const flashcardFooter = document.getElementById('flashcardFooter');
 const answerForm = document.getElementById('answerForm');
-const answerInput = document.getElementById('answerInput');
-const checkAnswerButton = document.getElementById('checkAnswerButton');
+const userInput = document.getElementById('userInput');
+const submitAnswerButton = document.getElementById('submitAnswerButton');
 const expandSettingsButton = document.getElementById('expandSettingsButton');
 const collapseSettingsButton = document.getElementById('collapseSettingsButton');
 const settingsOverlay = document.getElementById('settingsOverlay');
-const deckSelectionDropdown = document.getElementById('deckSelectionDropdown');
+const deckSelectionCombobox = document.getElementById('deckSelectionCombobox');
 
 // Settings
 const DB_NAME = 'Flashcard Decks';
@@ -15,13 +17,22 @@ var activeDatabase;
 var activeDeck = localStorage.getItem('activeDeck');
 var currentCard = '';
 
+// Entry Point
 initializeUIEventListeners();
 displayRandomFlashcardFromDeck();
 
+
+// Functions
 function initializeUIEventListeners() {
     document.addEventListener('DOMContentLoaded', () => {
+        // event listener for the "Expand Settings" button
+        expandSettingsButton.addEventListener('click', () => { toggleOverlayVisibility(); });
+        // event listener for the "Collapse Settings" button
+        collapseSettingsButton.addEventListener('click', () => { toggleOverlayVisibility(); });
+        // event listener for the "Deck Selection" dropdown
+        deckSelectionCombobox.addEventListener('change', onDeckSelectionChange);
         // event listener for the Answer Input field
-        answerInput.addEventListener('keydown', e => {
+        userInput.addEventListener('keydown', e => {
             if (e.key === 'Enter') {
                 e.preventDefault(); // prevent any default action triggered by the 'Enter' key
                 checkAndRecordAnswer();
@@ -30,31 +41,32 @@ function initializeUIEventListeners() {
         // event listener for the "Answer Form" submission
         answerForm.addEventListener('submit', (e) => {
             e.preventDefault(); // Prevent the default form submission via HTTP request
-            
+
             // Your logic to handle the answer
             checkAndRecordAnswer();
         });
-        // event listener for the "Expand Settings" button
-        expandSettingsButton.addEventListener('click', () => { expandSettingsOverlay(); });
-        // event listener for the "Collapse Settings" button
-        collapseSettingsButton.addEventListener('click', () => { collapseSettingsOverlay(); });
-        // event listener for the "Deck Selection" dropdown
-        deckSelectionDropdown.addEventListener('change', onDeckSelectionChange);
     });
 };
 
-function expandSettingsOverlay() {
-    settingsOverlay.style.width = "100%";
-};
+function toggleOverlayVisibility() {
+    // check if we're about to show the Overlay or hide it
+    const showOverlay = settingsOverlay.classList.toggle('visible');
 
-function collapseSettingsOverlay() {
-    settingsOverlay.style.width = "0%";
-    displayRandomFlashcardFromDeck();
-};
+    // if we're showing the Overlay, set a value for its Combobox
+    if (showOverlay && activeDeck !== null) {
+        deckSelectionCombobox.value = activeDeck;
+    }
+
+    // if we're hiding the Overlay, wait for the transition to complete before hiding it
+    (!showOverlay) ?
+        setTimeout(() => { settingsOverlay.style.visibility = "hidden"; }, 500) : // wait for opacity to reach 0, then hide the Settings overlay
+        settingsOverlay.style.visibility = 'visible';
+}
 
 function onDeckSelectionChange() {
     const chosenDeck = this.value;
     localStorage.setItem('activeDeck', chosenDeck);
+    displayRandomFlashcardFromDeck();
 }
 
 async function prepareDeck() {
@@ -71,7 +83,7 @@ async function prepareDeck() {
                 DB_VERSION = DB_VERSION + 1;
                 let upgradeRequest = indexedDB.open(DB_NAME, DB_VERSION);
 
-                upgradeRequest.onupgradeneeded = function(event) {
+                upgradeRequest.onupgradeneeded = function (event) {
                     activeDatabase = event.target.result;
                     if (!activeDatabase.objectStoreNames.contains(activeDeck)) {
                         let objectStore = activeDatabase.createObjectStore(activeDeck, { keyPath: 'id', autoIncrement: true });
@@ -87,33 +99,33 @@ async function prepareDeck() {
 
                 };
 
-                upgradeRequest.onsuccess = function(event) {
+                upgradeRequest.onsuccess = function (event) {
                     // Now, the object store should exist, and you can proceed with your original logic to populate it
                     activeDatabase = event.target.result;
 
                     // fetch the deck from an external URL and save it to the browser's IndexedDB storage
                     fetch(`https://raw.githubusercontent.com/Luspin/Nihongo-Furasshukado-Hub/main/Decks/${activeDeck}.js`)
-                    .then(response => response.json()) // convert the response to a JSON object
-                    .then(data => {
-                        // create a read-write transaction for the Active Deck store
-                        const readWriteTransaction = activeDatabase.transaction(activeDeck, 'readwrite');
-                        const objectStore = readWriteTransaction.objectStore(activeDeck);
-                        // add each item from the external URL to the Active Deck store
-                        data.forEach(item => objectStore.add(item));
-                        // wait for the read-write transaction to complete...
-                        readWriteTransaction.oncomplete = () => {
-                            console.log(`"${activeDeck}" deck retrieved from from an external URL and stored in IndexedDB.`);
-                            document.getElementById('activeDeck_Title').textContent = activeDatabase.objectStoreNames[0];
-                            resolve(activeDatabase);
-                        };
+                        .then(response => response.json()) // convert the response to a JSON object
+                        .then(data => {
+                            // create a read-write transaction for the Active Deck store
+                            const readWriteTransaction = activeDatabase.transaction(activeDeck, 'readwrite');
+                            const objectStore = readWriteTransaction.objectStore(activeDeck);
+                            // add each item from the external URL to the Active Deck store
+                            data.forEach(item => objectStore.add(item));
+                            // wait for the read-write transaction to complete...
+                            readWriteTransaction.oncomplete = () => {
+                                console.log(`"${activeDeck}" deck retrieved from from an external URL and stored in IndexedDB.`);
+                                flashcardHeader.textContent = activeDatabase.objectStoreNames[0];
+                                resolve(activeDatabase);
+                            };
 
-                        readWriteTransaction.onerror = (transactionError) => {
-                            console.error(`Transaction error: ${transactionError}`);
-                        };
-                    })
-                    .catch(error => {
-                        console.error(`Error retrieving deck from external URL: ${error}`);
-                    });
+                            readWriteTransaction.onerror = (transactionError) => {
+                                console.error(`Transaction error: ${transactionError}`);
+                            };
+                        })
+                        .catch(error => {
+                            console.error(`Error retrieving deck from external URL: ${error}`);
+                        });
 
                 };
 
@@ -149,7 +161,7 @@ async function prepareDeck() {
                         });
                 } else {
                     console.log(`Found "${activeDatabase.objectStoreNames[0]}" deck in IndexedDB.`);
-                    document.getElementById('activeDeck_Title').textContent = activeDeck;
+                    flashcardHeader.textContent = activeDeck;
                     resolve(activeDatabase);
                 }
             };
@@ -183,8 +195,8 @@ async function displayRandomFlashcardFromDeck() {
         return;
     }
 
-    // clear the 'answerInput' element
-    answerInput.value = "";
+    // clear the 'userInput' element
+    userInput.value = "";
 
     // await the promise regardless of its state ("Pending", "Resolved", or "Rejected")
     await prepareDeck();
@@ -200,8 +212,26 @@ async function displayRandomFlashcardFromDeck() {
             const randomIndex = Math.floor(Math.random() * retrievedFlashcards.length);
             currentCard = retrievedFlashcards[randomIndex];
 
-            flashcardHeader.textContent = `${currentCard.question}`;
-            flashcardFooter.textContent = `✔️: ${currentCard.correctGuesses}; ❌: ${currentCard.incorrectGuesses}; ${calculateCorrectGuessRatio()}%`;
+            flashcardFace.textContent = `${currentCard.question}`;
+            flashcardFooter.innerHTML = `
+            <table style="width: 100%; margin: 5px auto;">
+                <tr>
+                    <td style="text-align: left;">
+                        <span style="color: green;">
+                            <i class="ms-Icon ms-Icon--CheckMark footerIcon"></i>${currentCard.correctGuesses}
+                        </span>
+                        <span style="color: red;">
+                            <i class="ms-Icon ms-Icon--Cancel footerIcon"></i>${currentCard.incorrectGuesses}
+                        </span>
+                    </td>
+                    <td style="text-align: right;">
+                        <span style="color: gray;">
+                            <i class="ms-Icon ms-Icon--BullseyeTargetEdit footerIcon"></i>${calculateCorrectGuessRatio()}%
+                        </span>
+                    </td>
+                </tr>
+            </table>
+            `;
 
         } else {
             console.error(`Couldn't retrieve any flashcard from "${DB_NAME}/${activeDeck}".`);
@@ -225,14 +255,14 @@ function checkAndRecordAnswer() {
     const readWriteTransaction = activeDatabase.transaction(activeDeck, 'readwrite');
     const objectStore = readWriteTransaction.objectStore(activeDeck);
 
-    if (answerInput.value.toLowerCase() == currentCard.answer) {
+    if (userInput.value.toLowerCase() == currentCard.answer) {
         currentCard.correctGuesses++;
-        answerValidationMessage.textContent = '✔️';
+        answerFeedback.textContent = '✔️';
     }
     else {
         currentCard.incorrectGuesses++;
-        flashcardHeader.textContent = `${currentCard.answer}`;
-        answerValidationMessage.textContent = '❌';
+        flashcardFace.textContent = `${currentCard.answer}`;
+        answerFeedback.textContent = '❌';
     }
 
     // update the card in the Active Deck store
@@ -241,15 +271,15 @@ function checkAndRecordAnswer() {
     updateRequest.onsuccess = () => {
         // show a new flashcard after 3 seconds
         setTimeout(() => {
-            answerValidationMessage.textContent = '';
+            answerFeedback.textContent = '';
             displayRandomFlashcardFromDeck();
         }, 3000);
     };
 };
 
 
-
-
+// to list all Decks in GitHub
+// https://api.github.com/repos/Luspin/Nihongo-Furasshukado-Hub/contents/Decks
 
 
 
@@ -305,15 +335,15 @@ function addFlashcard(question, answer) {
 
 addFlashcardButton.addEventListener('click', () => {
     const questionInput = document.getElementById('questionField');
-    const answerInput = document.getElementById('answerField');
+    const userInput = document.getElementById('answerField');
 
     const question = questionInput.value;
-    const answer = answerInput.value;
+    const answer = userInput.value;
 
     if (question && answer) {
         addFlashcard(question, answer);
         questionInput.value = '';
-        answerInput.value = '';
+        userInput.value = '';
     }
 });
 
