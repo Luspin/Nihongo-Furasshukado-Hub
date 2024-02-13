@@ -10,7 +10,7 @@ const deckSelectionDropdown = document.getElementById('deckSelectionDropdown');
 
 // Settings
 const DB_NAME = 'Flashcard Decks';
-const DB_VERSION = 1;
+var DB_VERSION = localStorage.getItem('DB_VERSION') || 1;
 var activeDatabase;
 var activeDeck = localStorage.getItem('activeDeck');
 var currentCard = '';
@@ -65,6 +65,59 @@ async function prepareDeck() {
         primaryDatabaseConnectionRequest.onsuccess = event => {
             // set the 'activeDatabase' to the result of the Primary Database Connection
             activeDatabase = event.target.result;
+            if (!activeDatabase.objectStoreNames.contains(activeDeck)) {
+                // If the deck does not exist yet, close the current connection and reopen with DB_VERSION + 1
+                activeDatabase.close();
+                DB_VERSION = DB_VERSION + 1;
+                let upgradeRequest = indexedDB.open(DB_NAME, DB_VERSION);
+
+                upgradeRequest.onupgradeneeded = function(event) {
+                    activeDatabase = event.target.result;
+                    if (!activeDatabase.objectStoreNames.contains(activeDeck)) {
+                        let objectStore = activeDatabase.createObjectStore(activeDeck, { keyPath: 'id', autoIncrement: true });
+                        objectStore.createIndex('question', 'question', { unique: false });
+                        objectStore.createIndex('answer', 'answer', { unique: false });
+                        objectStore.createIndex('correctGuesses', 'correctGuesses', { unique: false });
+                        objectStore.createIndex('incorrectGuesses', 'incorrectGuesses', { unique: false });
+                        objectStore.createIndex('ratio', 'ratio', { unique: false });
+                        console.log(`Object store ${activeDeck} created.`);
+                    }
+
+                    localStorage.setItem('DB_VERSION', DB_VERSION);
+
+                };
+
+                upgradeRequest.onsuccess = function(event) {
+                    // Now, the object store should exist, and you can proceed with your original logic to populate it
+                    activeDatabase = event.target.result;
+
+                    // fetch the deck from an external URL and save it to the browser's IndexedDB storage
+                    fetch(`https://raw.githubusercontent.com/Luspin/Nihongo-Furasshukado-Hub/main/Decks/${activeDeck}.js`)
+                    .then(response => response.json()) // convert the response to a JSON object
+                    .then(data => {
+                        // create a read-write transaction for the Active Deck store
+                        const readWriteTransaction = activeDatabase.transaction(activeDeck, 'readwrite');
+                        const objectStore = readWriteTransaction.objectStore(activeDeck);
+                        // add each item from the external URL to the Active Deck store
+                        data.forEach(item => objectStore.add(item));
+                        // wait for the read-write transaction to complete...
+                        readWriteTransaction.oncomplete = () => {
+                            console.log(`"${activeDeck}" deck retrieved from from an external URL and stored in IndexedDB.`);
+                            document.getElementById('activeDeck_Title').textContent = activeDatabase.objectStoreNames[0];
+                            resolve(activeDatabase);
+                        };
+
+                        readWriteTransaction.onerror = (transactionError) => {
+                            console.error(`Transaction error: ${transactionError}`);
+                        };
+                    })
+                    .catch(error => {
+                        console.error(`Error retrieving deck from external URL: ${error}`);
+                    });
+
+                };
+
+            }
             // create a read-only transaction for the Active Deck store
             const readOnlyTransaction = activeDatabase.transaction(activeDeck, 'readonly');
             const objectStore = readOnlyTransaction.objectStore(activeDeck);
@@ -96,7 +149,7 @@ async function prepareDeck() {
                         });
                 } else {
                     console.log(`Found "${activeDatabase.objectStoreNames[0]}" deck in IndexedDB.`);
-                    document.getElementById('activeDeck_Title').textContent = activeDatabase.objectStoreNames[0];
+                    document.getElementById('activeDeck_Title').textContent = activeDeck;
                     resolve(activeDatabase);
                 }
             };
