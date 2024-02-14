@@ -8,6 +8,7 @@ const userInput = document.getElementById('userInput');
 const submitAnswerButton = document.getElementById('submitAnswerButton');
 const expandSettingsButton = document.getElementById('expandSettingsButton');
 const collapseSettingsButton = document.getElementById('collapseSettingsButton');
+const gitHubButton = document.getElementById('gitHubButton');
 const settingsOverlay = document.getElementById('settingsOverlay');
 const deckSelectionCombobox = document.getElementById('deckSelectionCombobox');
 
@@ -30,6 +31,8 @@ function initializeUIEventListeners() {
         expandSettingsButton.addEventListener('click', () => { toggleOverlayVisibility(); });
         // event listener for the "Collapse Settings" button
         collapseSettingsButton.addEventListener('click', () => { toggleOverlayVisibility(); });
+        // event listener for the "Toggle Brightness" button
+        toggleBrightnessButton.addEventListener('click', () => { toggleDarkMode(); });
         // event listener for the "Deck Selection" dropdown
         deckSelectionCombobox.addEventListener('change', onDeckSelectionChange);
         // event listener for the Answer Input field
@@ -48,6 +51,10 @@ function initializeUIEventListeners() {
         });
     });
 };
+
+function toggleDarkMode() {
+    document.body.classList.toggle('dark-mode');
+}
 
 function toggleOverlayVisibility() {
     // check if we're about to show the Overlay or hide it
