@@ -6,6 +6,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="styles.css" />
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
     <!-- Fluent UI -->
     <!-- https://developer.microsoft.com/en-us/fluentui?fabricVer=7#/get-started/web -->
     <link rel="stylesheet"
@@ -14,14 +16,20 @@
     <!-- https://learn.microsoft.com/en-us/fluent-ui/web-components/ -->
     <!-- https://www.npmjs.com/package/@fluentui/web-components -->
     <script type="module" src="https://unpkg.com/@fluentui/web-components"></script>
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6618751697568946"
+    crossorigin="anonymous"></script>
 </head>
 
 <body class="ms-bgColor-gray10">
     <main>
         <!-- Header -->
         <header>
-            <i class="ms-Icon ms-Icon--Settings" id="expandSettingsButton" aria-hidden="true"></i>
-            <i class="ms-Icon ms-Icon--Light" id="toggleBrightnessButton" aria-hidden="true"></i>
+            <i class="ms-Icon ms-Icon--Settings" id="expandSettingsButton"></i>
+            <i class="ms-Icon ms-Icon--Light" id="toggleBrightnessButton"></i>
+            <a href="https://github.com/Luspin">
+                <i class="fab fa-github fa-2x" id="gitHubButton" style="color:black;"></i>
+            </a>
         </header>
         <!-- Flashcard -->
         <fluent-card id="flashcardContainer" class="ms-fontSize-12 ms-fontWeight-regular">
@@ -48,7 +56,7 @@
             <!-- Header -->
             <header id="settingsOverlay-Header">
                 <h2 class="ms-fontSize-1">Settings</h2>
-                <i class="ms-Icon ms-Icon--ChromeClose" id="collapseSettingsButton" aria-hidden="true"></i>
+                <i class="ms-Icon ms-Icon--ChromeClose" id="collapseSettingsButton"></i>
             </header>
             <!-- Settings -->
             <div id="settingsOverlay-Settings">
