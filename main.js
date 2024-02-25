@@ -1,4 +1,18 @@
+// from https://codepen.io/0xtadash1/pen/qBVXPqz
+
+import {
+    StandardLuminance,
+    baseLayerLuminance,
+    fillColor,
+    allComponents,
+    provideFluentDesignSystem
+  } from "https://unpkg.com/@fluentui/web-components@2.0.0";
+
+provideFluentDesignSystem()
+  .register(allComponents);
+
 // Constants
+const flashcardContainer = document.getElementById('flashcardContainer');
 const flashcardHeader = document.getElementById('flashcardHeader');
 const flashcardFace = document.getElementById('flashcardFace');
 const flashcardFooter = document.getElementById('flashcardFooter');
@@ -22,9 +36,15 @@ var currentCard = '';
 // Entry Point
 initializeUIEventListeners();
 displayRandomFlashcardFromDeck();
-
+validateUserPreferences();
 
 // Functions
+function validateUserPreferences() {
+    if (localStorage.getItem('isDarkModeEnabled') === 'true') {
+        document.body.classList.add('dark-mode');
+    }
+}
+
 function initializeUIEventListeners() {
     document.addEventListener('DOMContentLoaded', () => {
         // event listener for the "Expand Settings" button
@@ -53,8 +73,43 @@ function initializeUIEventListeners() {
 };
 
 function toggleDarkMode() {
-    document.body.classList.toggle('dark-mode');
-}
+    let isDarkModeEnabled = localStorage.getItem('isDarkModeEnabled');
+
+    if (isDarkModeEnabled === 'true') {
+        localStorage.setItem('isDarkModeEnabled', 'false');
+        baseLayerLuminance.setValueFor(flashcardContainer, StandardLuminance.LightMode);
+        const fluentCard = document.querySelector("fluent-card");
+        const fluentdivider = document.querySelector("fluent-divider");
+        const fluentCombobox = document.querySelector("fluent-combobox");
+        const fluentOption = document.querySelector("fluent-option");
+        baseLayerLuminance.setValueFor(fluentCard, StandardLuminance.LightMode);
+        baseLayerLuminance.setValueFor(fluentdivider, StandardLuminance.LightMode);
+        baseLayerLuminance.setValueFor(fluentCombobox, StandardLuminance.LightMode);
+        baseLayerLuminance.setValueFor(fluentOption, StandardLuminance.LightMode);
+        baseLayerLuminance.setValueFor(postSubmissionProgressBar, StandardLuminance.LightMode);
+        baseLayerLuminance.setValueFor(userInput, StandardLuminance.LightMode);
+        baseLayerLuminance.setValueFor(submitAnswerButton, StandardLuminance.LightMode);
+        baseLayerLuminance.setValueFor(settingsOverlay, StandardLuminance.LightMode);
+        document.body.classList.toggle('dark-mode')
+    } else {
+        localStorage.setItem('isDarkModeEnabled', 'true');
+        baseLayerLuminance.setValueFor(flashcardContainer, StandardLuminance.DarkMode);
+        baseLayerLuminance.setValueFor(flashcardContainer, StandardLuminance.DarkMode);
+        const fluentCard = document.querySelector("fluent-card");
+        const fluentdivider = document.querySelector("fluent-divider");
+        const fluentCombobox = document.querySelector("fluent-combobox");
+        const fluentOption = document.querySelector("fluent-option");
+        baseLayerLuminance.setValueFor(fluentCard, StandardLuminance.DarkMode);
+        baseLayerLuminance.setValueFor(fluentdivider, StandardLuminance.DarkMode);
+        baseLayerLuminance.setValueFor(fluentCombobox, StandardLuminance.DarkMode);
+        baseLayerLuminance.setValueFor(fluentOption, StandardLuminance.DarkMode);
+        baseLayerLuminance.setValueFor(postSubmissionProgressBar, StandardLuminance.DarkMode);
+        baseLayerLuminance.setValueFor(userInput, StandardLuminance.DarkMode);
+        baseLayerLuminance.setValueFor(submitAnswerButton, StandardLuminance.DarkMode);
+        baseLayerLuminance.setValueFor(settingsOverlay, StandardLuminance.DarkMode);
+        document.body.classList.toggle('dark-mode')
+    }
+};
 
 function toggleOverlayVisibility() {
     // check if we're about to show the Overlay or hide it
@@ -69,13 +124,13 @@ function toggleOverlayVisibility() {
     (!showOverlay) ?
         setTimeout(() => { settingsOverlay.style.visibility = "hidden"; }, 500) : // wait for opacity to reach 0, then hide the Settings overlay
         settingsOverlay.style.visibility = 'visible';
-}
+};
 
 function onDeckSelectionChange() {
     const chosenDeck = this.value;
     localStorage.setItem('activeDeck', chosenDeck);
     displayRandomFlashcardFromDeck();
-}
+};
 
 async function prepareDeck() {
     return new Promise((resolve, reject) => {
@@ -262,40 +317,59 @@ function checkAndRecordAnswer() {
     // create a read-write transaction for the Active Deck store
     const readWriteTransaction = activeDatabase.transaction(activeDeck, 'readwrite');
     const objectStore = readWriteTransaction.objectStore(activeDeck);
+    // update the card statistics in the Active Deck store
+    const updateRequest = objectStore.put(currentCard);
 
     if (userInput.value.toLowerCase() == currentCard.answer) {
+        animateProgressBar();
+        animateFlashcard(true);
+        flashcardFace.textContent = `${currentCard.answer}`;
         currentCard.correctGuesses++;
     }
     else {
+        animateProgressBar();
+        animateFlashcard(false);
         flashcardFace.textContent = `${currentCard.answer}`;
         currentCard.incorrectGuesses++;
     }
 
-    // update the card statistics in the Active Deck store
-    const updateRequest = objectStore.put(currentCard);
-
     updateRequest.onsuccess = () => {
-        console.log(`Card statistics updated in "${DB_NAME}/${activeDeck}"`);
+        // console.log(`Card statistics updated in "${DB_NAME}/${activeDeck}"`);
     };
-
-    // display a new flashcard after 2 seconds
-    animateProgressBar(displayRandomFlashcardFromDeck);
 };
 
-function animateProgressBar(callback) {
+function animateProgressBar() {
     let i = 0;
-    // update the progress bar value every 100 milliseconds
+    // Update the progress bar value every 200 milliseconds
     const interval = setInterval(() => {
+        i += 10; // Smoother increment: increase by 5%
         progressBar.setAttribute('value', i);
-        i += 20; // increment the current value by 20%
 
-        if (i > 100) {
-            clearInterval(interval); // stop the interval when surpassing 100%
-            callback(); // …and trigger the callback()
+        if (i >= 100) {
+
+            setTimeout(() => { // Ensure a slight delay before executing the next function
+                displayRandomFlashcardFromDeck(); // Call this function only after animation is fully complete
+            }, 100);
+            clearInterval(interval); // Stop the interval when reaching or surpassing 100% // Adjust this delay as needed, it might be immediate (0) or slightly delayed for visual effect
+            
         }
-    }, 250);
-}
+    }, 50);
+};
 
+function animateFlashcard(isCorrect) {
+    if (isCorrect) {
+        // Pastel green
+        flashcardContainer.style.backgroundColor = '#b2fab4';
+    } else {
+        // Pastel red
+        flashcardContainer.style.backgroundColor = '#ffb3ba';
+    }
+
+    // Optional: Reset the background color after a short delay
+    setTimeout(() => {
+        flashcardContainer.style.backgroundColor = ''; // Resets to default
+    }, 2000); // Adjust the time as needed
+}
 
 // to list all Decks in GitHub
 // https://api.github.com/repos/Luspin/Nihongo-Furasshukado-Hub/contents/Decks

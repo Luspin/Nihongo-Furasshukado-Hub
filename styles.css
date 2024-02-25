@@ -147,12 +147,14 @@ body {
     display             : flex;
 }
 
+/* -------------------- */
 /* Dark Mode */
 .dark-mode {
     background-color    : #292827;
     color               : #f3f2f1;
 }
 
+/* Top Buttons */
 .dark-mode #gitHubButton {
     color               : #f3f2f1;
 }
