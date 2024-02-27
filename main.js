@@ -1,5 +1,8 @@
-// from https://codepen.io/0xtadash1/pen/qBVXPqz
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getAuth, signInWithPopup, OAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
 
+// from https://codepen.io/0xtadash1/pen/qBVXPqz
 import {
     StandardLuminance,
     baseLayerLuminance,
@@ -12,6 +15,7 @@ provideFluentDesignSystem()
   .register(allComponents);
 
 // Constants
+const signInMicrosoftButton = document.getElementById('signInMicrosoftButton');
 const flashcardContainer = document.getElementById('flashcardContainer');
 const flashcardHeader = document.getElementById('flashcardHeader');
 const flashcardFace = document.getElementById('flashcardFace');
@@ -22,7 +26,6 @@ const userInput = document.getElementById('userInput');
 const submitAnswerButton = document.getElementById('submitAnswerButton');
 const expandSettingsButton = document.getElementById('expandSettingsButton');
 const collapseSettingsButton = document.getElementById('collapseSettingsButton');
-const gitHubButton = document.getElementById('gitHubButton');
 const settingsOverlay = document.getElementById('settingsOverlay');
 const deckSelectionCombobox = document.getElementById('deckSelectionCombobox');
 
@@ -37,6 +40,38 @@ var currentCard = '';
 initializeUIEventListeners();
 displayRandomFlashcardFromDeck();
 validateUserPreferences();
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+    apiKey: "AIzaSyDzXgMdpDs9mj455zfD348PVXCmQ6g2Do0",
+    authDomain: "fshub-36f76.firebaseapp.com",
+    projectId: "fshub-36f76",
+    storageBucket: "fshub-36f76.appspot.com",
+    messagingSenderId: "118661407631",
+    appId: "1:118661407631:web:1170ee8069d582dd4b21fa",
+    measurementId: "G-J548BT0P4N"
+  };
+  
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+const auth = getAuth(app);
+
+// Microsoft Sign-In
+function signInWithMicrosoft() {
+    // Use OAuthProvider for Microsoft with the new syntax
+    var provider = new OAuthProvider('microsoft.com');
+    signInWithPopup(auth, provider).then((result) => {
+      // User signed in
+      console.log("User signed in with Microsoft:", result.user);
+    }).catch((error) => {
+      // Handle Errors here.
+      console.error("Error signing in with Microsoft:", error);
+    });
+  }
+  
+  signInMicrosoftButton.addEventListener('click', signInWithMicrosoft);
 
 // Functions
 function validateUserPreferences() {
