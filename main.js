@@ -272,7 +272,7 @@ async function displayRandomFlashcardFromDeck() {
 
         if (retrievedFlashcards.length > 0) {
             // select a random flashcard from the the Active Deck store
-            const randomIndex = Math.floor(Math.random() * retrievedFlashcards.length);
+            const randomIndex = 5 // Math.floor(Math.random() * retrievedFlashcards.length);
             currentCard = retrievedFlashcards[randomIndex];
 
             flashcardFace.textContent = `${currentCard.question}`;
@@ -381,8 +381,7 @@ function checkAndRecordAnswer() {
     // create a read-write transaction for the Active Deck store
     const readWriteTransaction = activeDatabase.transaction(activeDeck, 'readwrite');
     const objectStore = readWriteTransaction.objectStore(activeDeck);
-    // update the card statistics in the Active Deck store
-    const updateRequest = objectStore.put(currentCard);
+
 
     if (userInput.value.toLowerCase() == currentCard.answer) {
         playSound('coin');
@@ -399,9 +398,17 @@ function checkAndRecordAnswer() {
         currentCard.incorrectGuesses++;
     }
 
+    // update the card statistics in the Active Deck store
+    const updateRequest = objectStore.put(currentCard);
+
     updateRequest.onsuccess = () => {
         // console.log(`Card statistics updated in "${DB_NAME}/${activeDeck}"`);
     };
+
+    updateRequest.onerror = () => {
+        // console.error(`Error updating card statistics in "${activeDeck}".`);
+    };
+
 };
 
 function animateProgressBar() {
